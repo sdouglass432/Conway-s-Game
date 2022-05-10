@@ -1,0 +1,182 @@
+<!DOCTYPE HTML>
+<HTML>
+<HEAD>
+<TITLE>HTML Template</TITLE>
+<META charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<META name = "Author" content="Samuel Douglass" />
+<META name="Date" content="Mar 6, 2022" />
+<META name="Description" content="Conway's game of life" />
+<SCRIPT type="text/javascript">
+/**
+* @param board empty array used for board data
+* @param cells used to store cell life/death
+* @param nextCells data from cells is copied over & updated for next generation
+* "Good work on this project. By moving the random from displayBoard to createBoard, you could have just one function for the display instead of two.  
+*  Essentially, the board array doesn't really do anything, as all the important work is done by cells.  The cells.slice() Array function is a faster way of copying an array than the nested loop, though your method works just fine.
+*  The main thing missing from the rules application is a series of if statements to handle the edge cases (which is what is causing your errors)."
+*
+*/
+var board = [];
+var cells = [];
+var nextCells = [];
+var updateBoard = undefined
+function createBoard(boardSize) {
+/*
+* Creates data for board
+*/
+    for (let row=0; row<boardSize; row++){
+        rowData = [];
+        for (let col=0; col<boardSize; col++) {
+                   rowData.push("&nbsp"+"&nbsp"+"&nbsp")
+
+        }//column loop
+        board.push(rowData)
+    }// row loop 
+    displayBoard();
+} 
+function displayBoard() {
+/*
+* Displays board data & uses Math.random to choose live cells.
+*/
+    var html = "<TABLE border=1>";
+    for (let row=0; row<board.length; row++) {
+        var cellrow = [];
+        html += "<TR>";
+        for (let col=0; col<board[row].length; col++){
+            let seed = Math.random();
+            var color = "black";
+            var cell = "<TD id=\"";
+            cell += "R"+row+"C"+col;
+            if (seed >= .77) {
+                color = "red";
+                cellrow.push(1)
+            } else {
+                cellrow.push(0)
+            }
+
+            cell += "\" style=\"background-color:"+color;
+            cell += "; color:white;\">&nbsp;"+board[row][col];
+            cell += "</TD>";
+            html += cell;
+        } //column loop
+        html+= "</TR>";
+        cells.push(cellrow)
+    } //row loop
+    html = html + "</TABLE>";
+    document.getElementById("board").innerHTML = html;
+}
+
+function checkLife() {
+/*
+* Checks life surrounding each cell & updates data accordingly.
+* Scans current board & copies it to nextCells. Updates nextcells for next generation & copies it back to cells.
+*/
+    for (var r=1; r<board.length; r++) {
+        var newRow=[];
+        for (var c=1; c<board[r].length; c++){
+            newRow.push(cells[r][c]);
+            }
+        nextCells.push(newRow)
+}
+    for (var r=1; r<board.length - 1; r++) { // I think there's a logic error in the row/col calculations either here or above, but if I change anything I only get more errors.
+        for (var c=1; c<board[r].length - 1; c++){
+            var adjLife=0
+            adjLife += cells[r - 1][c - 1];//top left
+            adjLife += cells[r - 1][c];//top mid
+            adjLife += cells[r - 1][c + 1];//top right
+            adjLife += cells[r][c - 1];//mid left
+            adjLife += cells[r][c + 1];//mid right
+            adjLife += cells[r + 1][c - 1];//bottom left
+            adjLife += cells[r + 1][c];//bottom mid
+            adjLife += cells[r + 1][c + 1];//bottom right
+            if (cells[r][c] === 0) { // got this section and the idea for cell arrays from http://disruptive-communications.com/conwaylifejavascript/
+                switch (adjLife) {
+                    case 3:
+                        nextCells[r][c] = 1; //if cell is dead and has 3 neighbours, switch it on
+                        break;
+                    default:
+                        nextCells[r][c] = 0; //otherwise leave it dead
+                                  }
+            } else if (cells[r][c] === 1) { //apply rules to living cell
+                switch (adjLife) {
+                    case 0:
+                    case 1:
+                        nextCells[r][c] = 0; //die of lonelines
+                        break;
+                    case 2:
+                    case 3:
+                        nextCells[r][c] = 1; //carry on living
+                        break;
+                    case 4:
+                    case 5:
+                    case 6:
+                    case 7:
+                    case 8:
+                        nextCells[r][c] = 0; //die of overcrowding
+                        break;
+                    default:
+                        nextCells[r][c] = 0;
+                      }
+                }
+        }
+    }
+    for (var r = 0; r < board.length; r++) { //iterate through rows
+        for (var c = 0; c < board[r].length; c++) { //iterate through columns
+            cells[r][c] = nextCells[r][c];
+
+}
+}
+    displayNextBoard();
+}
+
+function displayNextBoard() {
+/*
+* Displays board for the next generation reading from nextcells.
+* Pushes new board to cells to check life.
+*/
+        var html = "<TABLE border=1>";
+        var cells = [];
+        for (let row=0; row<board.length; row++) {
+            var cellrow = [];
+            html += "<TR>";
+            for (let col=0; col<board[row].length; col++){
+                var color = "black";
+                var cell = "<TD id=\"";
+                cell += "R"+row+"C"+col;
+                if (nextCells[row][col] == 1) {
+                    cellrow.push(1)
+                    color = "red"
+                } else {
+                    cellrow.push(0)
+                }
+                cell += "\" style=\"background-color:"+color;
+                cell += "; color:white;\">&nbsp;"+board[row][col];
+                cell += "</TD>";
+                html += cell;
+            } //column loop
+            html+= "</TR>";
+            cells.push(cellrow)
+        } //row loop
+        html = html + "</TABLE>";
+        document.getElementById("board").innerHTML = html;
+    }
+    function start() { //got this function from a website, but couldn't find it again.
+        clearInterval(updateBoard);
+        updateBoard = setInterval(checkLife, 500);
+}
+
+</SCRIPT>
+</HEAD>
+<h1 style="text-align:center;">Conway's game of life</h1>
+<b>Welcome to Conway's game of life!</b> <br />
+The rules are: <br />
+    <b>1.</b>Any live cell with two or three live neighbours survives.<br />
+    <b>2.</b>Any dead cell with three live neighbours becomes a live cell.<br />
+    <b>3.</b>All other live cells die in the next generation.<br /> <br />
+    To play, simply press the button! <br />
+<BODY onLoad="createBoard(35);">
+<BUTTON id="check" onClick="start();">Play</BUTTON>
+<DIV id="board"></DIV>
+</BODY>
+</HTML>
