@@ -1,4 +1,4 @@
-# Conway-s-Game
+# Conways-Game
 Conway's game of life using HTML tables.
 
 ## To Do
